@@ -13,7 +13,7 @@ shinyServer(
      if(input$MapT == "Custom LA"){
        data <- filter(data, COUNCIL_AREA.NAME == as.character(input$CouncilChoice))
      }
-     
+##SO you need to have a data frame with summary stats already done on FTE, ActualSalary, and number of employees     
      dta_cln <- data %>%
        mutate_each(funs(niceCuts(., cuts = 8, thousands.separator = TRUE)), 
                  matches("FTE_mean|FTE_sum|FTESalary_mean|ActualSalary_mean|ActualSalary_sum|NoDistEmp_mean")) %>%
@@ -48,18 +48,6 @@ shinyServer(
       }
     })
     
-    output$CentreChoose <- renderUI({
-      if(input$MapT == "Custom LA"){
-        textInput("LAMap", "Choose Centre of Map", value = "Livingston")}
-    })
-    
-    output$ZoomChoose <- renderUI({
-      if(input$MapT == "Custom LA"){
-      sliderInput("MZoom", "Select Zoom", min = 5, max = 12, value = 9)} 
-    })
-       ##Need to include the ability to press a button to actually fetch the map for us
-       #use actionButton - http://shiny.rstudio.com/gallery/actionbutton-demo.html
-  
     #get maps
     backgrScot <- get_map("Scotland", zoom = 7, maptype = "roadmap",
                            source = "google")
@@ -105,6 +93,27 @@ shinyServer(
     } else{mup <- m}
     return(mup)
   })
+   plotInput2 <- function(){
+     dataset <- dta()
+     bgmap <- bgmap()
+     
+     m <- bgmap + geom_polygon(data = dataset, aes_string(x = "long",
+                                                          y = "lat", fill = input$Ind,
+                                                          group = "group"), alpha = 0.9, colour = "black", size = 0.1)+
+       scale_fill_brewer(name = as.character(input$LegendT), palette = "RdYlGn")+
+       ggtitle(as.character(input$Title))+
+       theme_map() +
+       theme(plot.title = element_text(face = 'bold', size = 14),
+             legend.background = element_rect(colour = 'black'),
+             legend.justification = c(0,0),
+             legend.position = c(as.numeric(input$LegX),as.numeric(input$LegY)),
+             legend.title = element_text(face = "bold"),
+             legend.key.size = unit(input$LegSize, "mm")) 
+     if(!is.null(values$brush)){
+       mup <- m + coord_fixed(ratio = input$rat,xlim = c(values$brush$xmax, values$brush$xmin), ylim = c(values$brush$ymax, values$brush$ymin))
+     } else{mup <- m}
+     return(mup)
+   }
    
    observeEvent(input$resetButton,{
      values$brush <- NULL
@@ -114,11 +123,11 @@ shinyServer(
     output$map <- renderPlot({
       return(plotInput())
     })
-        
+    
    output$downloadMap <- downloadHandler(
-     filename = function() {paste0(input$dlnm, ".png")},
+     filename = function() {paste0(input$dlNm, ".png")},
      content = function(file){
-       ggsave(file, plot = plotInput(), device = "png")
+       ggsave(file, plot = plotInput2(), device = "png")
      }
    ) 
 })
