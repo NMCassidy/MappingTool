@@ -77,6 +77,13 @@ shinyServer(
       }
     })
     
+    values <- reactiveValues(
+      brush = NULL
+    )
+    observe({
+      values$brush <- input$plotBrush
+    })
+
    plotInput<- eventReactive(input$goButton, {
     dataset <- dta()
     bgmap <- bgmap()
@@ -92,13 +99,26 @@ shinyServer(
           legend.justification = c(0,0),
           legend.position = c(as.numeric(input$LegX),as.numeric(input$LegY)),
           legend.title = element_text(face = "bold"),
-          legend.key.size = unit(input$LegSize, "mm")) +
-      coord_cartesian(xlim = c(input$LimX1, input$LimX2), ylim = c(input$LimY1, input$LimY2))
-    return(m)
+          legend.key.size = unit(input$LegSize, "mm")) 
+    if(!is.null(values$brush)){
+     mup <- m + coord_fixed(ratio = input$rat,xlim = c(values$brush$xmax, values$brush$xmin), ylim = c(values$brush$ymax, values$brush$ymin))
+    } else{mup <- m}
+    return(mup)
   })
+   
+   observeEvent(input$resetButton,{
+     values$brush <- NULL
+     runjs("document.getElementById('plotBrush_brush').remove()")
+   })
     
     output$map <- renderPlot({
       return(plotInput())
     })
-    }
-)
+        
+   output$downloadMap <- downloadHandler(
+     filename = function() {paste0(input$dlnm, ".png")},
+     content = function(file){
+       ggsave(file, plot = plotInput(), device = "png")
+     }
+   ) 
+})
