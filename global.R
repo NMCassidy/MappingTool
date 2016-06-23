@@ -1,7 +1,7 @@
 ##Global file
 ##Would be able to undertake the data loading and data cleaning in this portion
 #might just source the data cleaning file form shared drive (although this would be slower)
-
+ library(dplyr)
 #Load Functions -------------------------------------------------------
 #Load Nice Cuts function
 niceCuts <- function(variable, cuts = 10, thousands.separator = FALSE) {
@@ -135,3 +135,8 @@ destring <- function(x) {
 
 #Generic Data Loading
 shpsDzs01fort <- readRDS("S:/G - Governance & Performance Mngmt/Research Team/Generic R Tools/objects/dzs01_shps_f.RDS")
+# Take basic geography data
+dtaGeoHigher <- read.csv(file.path("S:", "G - Governance & Performance Mngmt",
+                   "Salaries-Analysis","RStudio-Salaries","data", "csv", "DZs to Higher Geos.csv"),
+                    stringsAsFactors = FALSE) %>%
+  mutate(DATAZONE = trimws(as.character(DATAZONE)))
