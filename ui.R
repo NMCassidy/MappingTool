@@ -5,7 +5,8 @@ library(shiny)
 library(shinyjs)
 library(shinydashboard)
 
-shinyUI(navbarPage("Basic Map Making Tool - Do Not Publish!!!",
+shinyUI(navbarPage(theme = "bootstrap.css",
+                   "Basic Map Making Tool - Do Not Publish!!!",
   tabPanel("Data Source and Tidy",
   sidebarPanel(
     #Choose a data set to be used for the map making process
